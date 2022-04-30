@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #query{
+            width: 200px;
+        }
+        #mod{
+            display: flex;
+        }
+        #movies{
+            border: 1px solid black;
+            height: 200px;
+            width: 206px;
+            border-top: none;
+            overflow-y: scroll;
+        }
+        #dom{
+            margin: auto;
+            margin-top: -80px;
+            margin-left: 300px;
+        }
+        #dom>div{
+            width: 350px;
+            height: 600px;
+            box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 1px, rgba(0, 0, 0, 0.07) 0px 2px 2px, rgba(0, 0, 0, 0.07) 0px 4px 4px, rgba(0, 0, 0, 0.07) 0px 8px 8px, rgba(0, 0, 0, 0.07) 0px 16px 16px;
+            text-align: center;
+        }
+        img{
+            height: 450px;
+            width: 100%;
+        }
+        #p:hover{
+            cursor: pointer;
+            font-weight: bolder;
+        }
+        a{
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <h1><a href="movies.html">Trending Movies</a></h1>
+    <input oninput="debounce(main,500)" type="text" id="query" placeholder="Enter Movie name here">
+    <div id="mod">
+        <div id="movies"></div>
+        <span><div id="dom"></div></span>
+    </div>
+</body>
+</html>
+
+<script>
+    let dom = document.getElementById("dom")
+    let id;
+    let movies_div = document.getElementById("movies");
+    if(query==""){
+            movies_div.innerHTML=null;
+        }
+
+    
+    async function searchMovies(){
+        
+        try{
+            let query = document.getElementById("query").value;
+
+            const url= `https://api.themoviedb.org/3/search/movie?api_key=8010ac67d442f68955d4d41cfb405e8f&language=en-US&page=1&include_adult=false&query=${query}`
+
+            let res = await fetch(url)
+
+            let data = await res.json()
+            console.log(data)
+            return data.results;
+        } catch(err){
+            console.log(err)
+        }
+    }
+
+    function appendata(data){
+
+        if(data===undefined){
+            return false;
+        }
+        
+        movies_div.innerHTML=null;
+        data.map(function(elem){
+            let p = document.createElement("p");            
+            p.innerText=elem.title;
+            console.log(p.innerText)
+            p.setAttribute("id","p")
+            p.addEventListener("click", function(){
+                move(elem)
+            })
+            movies_div.append(p)
+        })
+    }
+
+    function move(elem){
+        dom.innerHTML=null;
+        var div = document.createElement("div");
+       
+        var img = document.createElement("img");
+        if(elem.poster_path==null){
+            img.src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/No-Image-Placeholder.svg/330px-No-Image-Placeholder.svg.png"
+        }
+        else{
+            img.src = "https://image.tmdb.org/t/p/w500" + elem.poster_path;
+        }
+        
+        
+        console.log(img)
+
+        var title = document.createElement("h3");
+        title.innerText=`Movie : ${elem.title}`;
+
+        var r_d = document.createElement("h3");
+        r_d.innerText=`Release date : ${elem.release_date}`;
+
+        var rating = document.createElement("h3");
+        rating.innerText=`IMDB rating : ${elem.vote_average}`;
+
+        if(elem.release_date==""){
+            
+            r_d.innerText=`Release date : Not available`;
+            
+            div.append(r_d)
+        }
+
+        if(elem.vote_average==0){
+            
+            rating.innerText=`IMDB rating : Not available`;
+            
+            div.append(rating)
+        }
+        
+        
+        div.append(img,title,r_d,rating)
+
+        dom.append(div)
+
+    }
+    async function main(){
+        let data = await searchMovies();
+
+        if(data===undefined){
+            return false;
+        }
+        appendata(data)
+
+    }
+
+    function debounce(func,delay){
+        if(id){
+            clearTimeout(id)
+        }
+
+        id = setTimeout(function(){
+            func();
+        },delay)
+    }
+</script>
